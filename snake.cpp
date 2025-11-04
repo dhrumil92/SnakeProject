@@ -5,7 +5,7 @@
 #include <conio.h>
 #include <windows.h>
 using namespace std;
-
+// hurdles add karvana che
 // Snake direction
 enum Direction { STOP = 0, LEFT, RIGHT, UP, DOWN };
 
@@ -148,3 +148,4 @@ int main() {
     game.run();
     return 0;
 }
+
