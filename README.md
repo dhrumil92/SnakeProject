@@ -1,4 +1,3 @@
-# BCA All Files are available semester wise
-comming soon.....
-I'm learning now....
-I've to make a snake game.
+This repo is my first semester project based of object oriented concept
+My project is to make a snake game in c++ language
+All the requirements and conditions for the game are mentioned in the pdf.
