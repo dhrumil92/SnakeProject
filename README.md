@@ -1,4 +1,4 @@
-# 🐍 Snake Game (C++ Console Project)
+# 🐍 Snake Game (C++ Console Project)...
 
 A classic **Snake Game** implemented in **C++**, using **Object-Oriented Programming (OOP)** and **Windows console graphics**.  
 The player controls a snake that grows when it eats food. The game ends when the snake collides with the boundary or itself.  
