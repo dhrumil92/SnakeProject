@@ -2,7 +2,7 @@
 
 A classic **Snake Game** implemented in **C++**, using **Object-Oriented Programming (OOP)** and **Windows console graphics**.  
 The player controls a snake that grows when it eats food. The game ends when the snake collides with the boundary or itself.  
-
+Not only project also teaches the fundamentals of OOPs while building
 ---
 
 ## 📁 Project Overview
