@@ -16,8 +16,8 @@ private:
     vector<pair<int, int>> body;
     Direction dir;
 public:
-    Snake(int initX, int initY, int length = 3) {
-        dir = RIGHT;
+    Snake(int initX, int initY, int length = 3, Direction initDir = RIGHT) {
+        dir = initDir;
         for (int i = 0; i < length; ++i)
             body.push_back({initX - i, initY});
     }
@@ -85,15 +85,24 @@ void setColor(int color) {
 // ------------------------------------
 class Game {
 private:
-    Snake snake;
+    Snake snake1;
+    Snake snake2;
     Food food;
     int width, height;
-    int score, highScore;
+    int score1, score2;
     bool gameOver;
 
 public:
-    Game(int w=25, int h=20) : snake(w/2, h/2), food(w, h), width(w), height(h) {
-        score = 0; highScore = 0; gameOver = false;
+    Game(int w=25, int h=20) : snake1(4, h/2, 3, RIGHT), snake2(w-5, h/2, 3, LEFT), food(w, h), width(w), height(h) {
+        score1 = 0; score2 = 0; gameOver = false;
+        food.spawn(forbidden());
+    }
+
+    vector<pair<int,int>> forbidden() {
+        vector<pair<int,int>> body = snake1.getBody();
+        vector<pair<int,int>> body2 = snake2.getBody();
+        body.insert(body.end(), body2.begin(), body2.end());
+        return body;
     }
 
     void clearScreen() {
@@ -118,12 +127,22 @@ public:
             }
             else {
                 bool snakePart = false;
-                for (auto b : snake.getBody()) {
+                for (auto b : snake1.getBody()) {
                     if (b.first == x && b.second == y) {
                         setColor(2); // Green snake
                         cout << "O";
                         snakePart = true;
                         break;
+                    }
+                }
+                if (!snakePart) {
+                    for (auto b : snake2.getBody()) {
+                        if (b.first == x && b.second == y) {
+                            setColor(11); // Cyan snake
+                            cout << "X";
+                            snakePart = true;
+                            break;
+                        }
                     }
                 }
                 if (!snakePart) {
@@ -137,9 +156,12 @@ public:
 
     // Scoreboard text
     setColor(6); // Yellow
-    cout << "Score: " << score << "   High Score: " << highScore << endl;
+    cout << "P1 Score: " << score1 << "   P2 Score: " << score2 << endl;
     if (gameOver) {
         setColor(4); // Red for Game Over
+        if (score1 > score2) cout << "GAME OVER! Player 1 wins.\n";
+        else if (score2 > score1) cout << "GAME OVER! Player 2 wins.\n";
+        else cout << "GAME OVER! Draw.\n";
         cout << "GAME OVER!  Press R to restart or X to exit.\n";
     }
 
@@ -153,17 +175,17 @@ public:
             if (ch == 224) { // arrow keys
                 ch = _getch();
                 switch (ch) {
-                    case 72: snake.setDirection(UP); break;     // UP
-                    case 80: snake.setDirection(DOWN); break;   // DOWN
-                    case 75: snake.setDirection(LEFT); break;   // LEFT
-                    case 77: snake.setDirection(RIGHT); break;  // RIGHT
+                    case 72: snake2.setDirection(UP); break;     // UP
+                    case 80: snake2.setDirection(DOWN); break;   // DOWN
+                    case 75: snake2.setDirection(LEFT); break;   // LEFT
+                    case 77: snake2.setDirection(RIGHT); break;  // RIGHT
                 }
             } else {
                 switch (ch) {
-                    case 'a': case 'A': snake.setDirection(LEFT); break;
-                    case 'd': case 'D': snake.setDirection(RIGHT); break;
-                    case 'w': case 'W': snake.setDirection(UP); break;
-                    case 's': case 'S': snake.setDirection(DOWN); break;
+                    case 'a': case 'A': snake1.setDirection(LEFT); break;
+                    case 'd': case 'D': snake1.setDirection(RIGHT); break;
+                    case 'w': case 'W': snake1.setDirection(UP); break;
+                    case 's': case 'S': snake1.setDirection(DOWN); break;
                     case 'r': case 'R': if (gameOver) restart(); break;
                     case 'x': case 'X': gameOver = true; break;
                 }
@@ -174,26 +196,39 @@ public:
     void logic() {
         if (gameOver) return;
 
-        snake.move(); // always move
+        snake1.move(); // always move
+        snake2.move();
 
         // Check if food eaten
-        if (snake.getHead() == food.getPos()) {
-            score++;
-            if (score > highScore) highScore = score;
-            food.spawn(snake.getBody());
-            snake.move(true);
+        bool eat1 = snake1.getHead() == food.getPos();
+        bool eat2 = snake2.getHead() == food.getPos();
+        if (eat1) score1++;
+        if (eat2) score2++;
+        if (eat1 || eat2) {
+            if (eat1) snake1.move(true);
+            if (eat2) snake2.move(true);
+            food.spawn(forbidden());
         }
 
-        auto head = snake.getHead();
-        if (head.first <= 0 || head.first >= width-1 || head.second <= 0 || head.second >= height-1 || snake.hitSelf()) {
+        auto head1 = snake1.getHead();
+        auto head2 = snake2.getHead();
+        bool hit = head1.first <= 0 || head1.first >= width-1 || head1.second <= 0 || head1.second >= height-1 || snake1.hitSelf();
+        hit = hit || head2.first <= 0 || head2.first >= width-1 || head2.second <= 0 || head2.second >= height-1 || snake2.hitSelf();
+        for (auto b : snake2.getBody())
+            if (b == head1) hit = true;
+        for (auto b : snake1.getBody())
+            if (b == head2) hit = true;
+        if (hit) {
             gameOver = true;
         }
     }
 
     void restart() {
-        snake = Snake(width/2, height/2);
-        score = 0;
-        food.spawn(snake.getBody());
+        snake1 = Snake(4, height/2, 3, RIGHT);
+        snake2 = Snake(width-5, height/2, 3, LEFT);
+        score1 = 0;
+        score2 = 0;
+        food.spawn(forbidden());
         gameOver = false;
     }
 
@@ -204,7 +239,7 @@ public:
     cout << "                        WELCOME TO SNAKE GAME\n";
     cout << "===================================================================\n";
     setColor(15);
-    cout << "Controls: W/A/S/D or Arrow Keys to move | R to restart | X to exit\n";
+    cout << "Controls: W/A/S/D for P1 | Arrow Keys for P2 | R to restart | X to exit\n";
     cout << "------------------------------------------------------------------\n";
     cout << "Press any key to start...";
     _getch();
