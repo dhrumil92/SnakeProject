@@ -18,8 +18,15 @@ private:
 public:
     Snake(int initX, int initY, int length = 3, Direction initDir = RIGHT) {
         dir = initDir;
-        for (int i = 0; i < length; ++i)
-            body.push_back({initX - i, initY});
+        for (int i = 0; i < length; ++i) {
+            switch (dir) {
+                case LEFT:  body.push_back({initX + i, initY}); break;
+                case RIGHT: body.push_back({initX - i, initY}); break;
+                case UP:    body.push_back({initX, initY + i}); break;
+                case DOWN:  body.push_back({initX, initY - i}); break;
+                default:    body.push_back({initX - i, initY}); break;
+            }
+        }
     }
     void setDirection(Direction d) {
         // prevent reversing direction
@@ -214,10 +221,12 @@ public:
         auto head2 = snake2.getHead();
         bool hit = head1.first <= 0 || head1.first >= width-1 || head1.second <= 0 || head1.second >= height-1 || snake1.hitSelf();
         hit = hit || head2.first <= 0 || head2.first >= width-1 || head2.second <= 0 || head2.second >= height-1 || snake2.hitSelf();
-        for (auto b : snake2.getBody())
-            if (b == head1) hit = true;
-        for (auto b : snake1.getBody())
-            if (b == head2) hit = true;
+        auto body2 = snake2.getBody();
+        for (size_t i = 1; i < body2.size(); ++i)
+            if (body2[i] == head1) hit = true;
+        auto body1 = snake1.getBody();
+        for (size_t i = 1; i < body1.size(); ++i)
+            if (body1[i] == head2) hit = true;
         if (hit) {
             gameOver = true;
         }
@@ -248,21 +257,19 @@ public:
 
     while (true) {
         draw();       // draw grid starting below line 4
+        if (gameOver) {
+            cout << "Press R to Restart or X to Exit...\n";
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == 'r' || ch == 'R') restart();
+                else if (ch == 'x' || ch == 'X') return;
+            }
+            Sleep(100);
+            continue;
+        }
+
         input();      // handle keys
         logic();      // update snake + collisions
-
-        if (gameOver) {
-            draw();
-            Sleep(300);
-            cout << "Press R to Restart or X to Exit...\n";
-            while (true) {
-                if (_kbhit()) {
-                    char ch = _getch();
-                    if (ch == 'r' || ch == 'R') { restart(); break; }
-                    else if (ch == 'x' || ch == 'X') return;
-                }
-            }
-        }
 
         Sleep(100); // game speed
     }
