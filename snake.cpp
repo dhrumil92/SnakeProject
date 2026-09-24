@@ -6,6 +6,10 @@
 #include <windows.h>
 using namespace std;
 
+#ifndef GET_RAND
+#define GET_RAND rand
+#endif
+
 enum Direction { STOP = 0, LEFT, RIGHT, UP, DOWN };
 
 // ------------------------------------
@@ -64,8 +68,8 @@ public:
         while (true) {
             // int x = rand() % width;
             // int y = rand() % height;
-            int x = 1 + rand() % (width - 2);
-			int y = 1 + rand() % (height - 2);
+            int x = 1 + GET_RAND() % (width - 2);
+			int y = 1 + GET_RAND() % (height - 2);
 
             bool bad = false;
             for (auto s : forbidden)
